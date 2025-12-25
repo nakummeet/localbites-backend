@@ -12,15 +12,11 @@ const connectDB = async () => {
   }
 
   if (!cached.promise) {
-    mongoose.set("bufferCommands", false);
-
     cached.promise = mongoose
       .connect(process.env.MONGO_URI, {
         serverSelectionTimeoutMS: 5000,
       })
-      .then((mongoose) => {
-        return mongoose;
-      });
+      .then((mongoose) => mongoose);
   }
 
   cached.conn = await cached.promise;

@@ -4,21 +4,24 @@ const connectDB = require("../config/db");
 const app = express();
 app.use(express.json());
 
-(async () => {
-  await connectDB();
-})();
+// 🔐 CONNECT DB BEFORE ANY ROUTE
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+    });
+  }
+});
 
-const authRoutes = require("../routes/authRoutes");
-const restaurantRoutes = require("../routes/restaurantRoutes");
-const foodRoutes = require("../routes/foodRoutes");
-const cartRoutes = require("../routes/cartRoutes");
-const orderRoutes = require("../routes/orderRoutes");
-
-app.use("/api/auth", authRoutes);
-app.use("/api/restaurants", restaurantRoutes);
-app.use("/api/foods", foodRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes);
+app.use("/api/auth", require("../routes/authRoutes"));
+app.use("/api/restaurants", require("../routes/restaurantRoutes"));
+app.use("/api/foods", require("../routes/foodRoutes"));
+app.use("/api/cart", require("../routes/cartRoutes"));
+app.use("/api/orders", require("../routes/orderRoutes"));
 
 app.get("/", (req, res) => {
   res.send("LocalBites Backend is Running 🚀");
