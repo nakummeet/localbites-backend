@@ -6,19 +6,16 @@ const connectDB = async () => {
   if (isConnected) return;
 
   try {
-    const mongoUri = process.env.MONGO_URI;
+    mongoose.set("bufferCommands", false); // 🚫 disable buffering
 
-    if (!mongoUri) {
-      console.error("MONGO_URI not defined");
-      return; // ❗ do NOT crash
-    }
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
 
-    await mongoose.connect(mongoUri);
     isConnected = true;
-    console.log("MongoDB connected successfully");
-  } catch (error) {
-    console.error("MongoDB connection failed:", error.message);
-    // ❌ DO NOT exit process on Vercel
+    console.log("MongoDB connected");
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
   }
 };
 
