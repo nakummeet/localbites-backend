@@ -24,4 +24,4 @@ app.get("/", (req, res) => {
 
 connectDB();
 
-module.exports = app;
+module.exports = serverless(app);
