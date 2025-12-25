@@ -2,13 +2,11 @@ const express = require("express");
 const connectDB = require("../config/db");
 
 const app = express();
-
-app.use(async (req, res, next) => {
-  await connectDB();
-  next();
-});
-
 app.use(express.json());
+
+(async () => {
+  await connectDB();
+})();
 
 const authRoutes = require("../routes/authRoutes");
 const restaurantRoutes = require("../routes/restaurantRoutes");
