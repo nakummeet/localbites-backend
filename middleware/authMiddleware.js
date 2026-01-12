@@ -1,30 +1,53 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const apiResponse = require("../utils/apiResponse");
+const express = require("express");
+const router = express.Router();
 
+const {
+  addFood,
+  getFoodsByRestaurant,
+  updateFood,
+  deleteFood,
+  toggleFoodAvailability,
+} = require("../controllers/foodController");
 
-const authMiddleware = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+const auth = require("../middleware/authMiddleware");
+const role = require("../middleware/roleMiddleware");
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return apiResponse.error(res, "No token provided", 401);
-  }
+// ➕ ADD FOOD
+router.post(
+  "/",
+  auth,
+  role("owner"),
+  addFood
+);
 
-  try {
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+// 📥 GET FOODS BY RESTAURANT (PUBLIC)
+router.get(
+  "/restaurant/:id",
+  getFoodsByRestaurant
+);
 
-    // 🔥 FIX IS HERE
-    req.user = await User.findById(decoded.id).select("-password");
+// ✏️ UPDATE FOOD  ✅ THIS WAS MISSING
+router.put(
+  "/:id",
+  auth,
+  role("owner"),
+  updateFood
+);
 
-    if (!req.user) {
-      return apiResponse.error(res, "User not found", 401);
-    }
+// 🗑️ DELETE FOOD
+router.delete(
+  "/:id",
+  auth,
+  role("owner"),
+  deleteFood
+);
 
-    next();
-  } catch (error) {
-    return apiResponse.error(res, "Invalid token", 401);
-  }
-};
+// 🔄 TOGGLE AVAILABILITY
+router.patch(
+  "/:id/toggle",
+  auth,
+  role("owner"),
+  toggleFoodAvailability
+);
 
-module.exports = authMiddleware;
+module.exports = router;
