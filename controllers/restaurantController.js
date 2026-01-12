@@ -2,6 +2,7 @@ const Restaurant = require("../models/Restaurant");
 const User = require("../models/User");
 const apiResponse = require("../utils/apiResponse");
 
+// CREATE RESTAURANT
 const createRestaurant = async (req, res) => {
   try {
     const { name, address } = req.body;
@@ -14,14 +15,12 @@ const createRestaurant = async (req, res) => {
       );
     }
 
-    // Defensive role check (extra safety)
     if (req.user.role !== "owner") {
       return apiResponse.error(res, "Access denied", 403);
     }
 
     const ownerId = req.user.id;
 
-    // Check if owner already has a restaurant
     const existingRestaurant = await Restaurant.findOne({ owner: ownerId });
     if (existingRestaurant) {
       return apiResponse.error(
@@ -53,6 +52,28 @@ const createRestaurant = async (req, res) => {
   }
 };
 
+// GET ALL / SEARCH RESTAURANTS
+const getAllRestaurants = async (req, res) => {
+  try {
+    const { search } = req.query;
+
+    const filter = search
+      ? { name: { $regex: search, $options: "i" } }
+      : {};
+
+    const restaurants = await Restaurant.find(filter);
+
+    return apiResponse.success(
+      res,
+      "Restaurants fetched successfully",
+      restaurants
+    );
+  } catch (error) {
+    return apiResponse.error(res, "Server error", 500);
+  }
+};
+
 module.exports = {
   createRestaurant,
+  getAllRestaurants,
 };
