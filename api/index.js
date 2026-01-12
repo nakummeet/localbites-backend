@@ -22,7 +22,7 @@ app.use("/api/restaurants", require("../routes/restaurantRoutes"));
 app.use("/api/foods", require("../routes/foodRoutes"));
 app.use("/api/cart", require("../routes/cartRoutes"));
 app.use("/api/orders", require("../routes/orderRoutes"));
-app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/users", require("../routes/userRoutes"));
 
 
 app.get("/", (req, res) => {
