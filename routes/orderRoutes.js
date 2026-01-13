@@ -6,6 +6,8 @@ const {
   getMyOrders,
   getRestaurantOrders,
   updateOrderStatus,
+  acceptOrder,
+  rejectOrder,
 } = require("../controllers/orderController");
 
 const auth = require("../middleware/authMiddleware");
@@ -17,6 +19,10 @@ router.post("/place", auth, createOrder);
 
 // Get logged-in user's orders
 router.get("/my", auth, getMyOrders);
+
+router.put("/:id/accept", auth, role("owner"), acceptOrder);
+router.put("/:id/reject", auth, role("owner"), rejectOrder);
+
 
 
 // Get orders for owner's restaurant

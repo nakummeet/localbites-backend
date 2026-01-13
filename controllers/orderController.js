@@ -146,3 +146,54 @@ exports.updateOrderStatus = async (req, res) => {
     return apiResponse.error(res, "Server error", 500, error.message);
   }
 };
+exports.acceptOrder = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findOne({ owner: req.user.id });
+    if (!restaurant) {
+      return apiResponse.error(res, "Restaurant not found", 403);
+    }
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      restaurant: restaurant._id,
+      status: "pending",
+    });
+
+    if (!order) {
+      return apiResponse.error(res, "Order not found or not pending", 404);
+    }
+
+    order.status = "accepted";
+    await order.save();
+
+    return apiResponse.success(res, "Order accepted", order);
+  } catch (err) {
+    return apiResponse.error(res, "Server error", 500, err.message);
+  }
+};
+
+exports.rejectOrder = async (req, res) => {
+  try {
+    const restaurant = await Restaurant.findOne({ owner: req.user.id });
+    if (!restaurant) {
+      return apiResponse.error(res, "Restaurant not found", 403);
+    }
+
+    const order = await Order.findOne({
+      _id: req.params.id,
+      restaurant: restaurant._id,
+      status: "pending",
+    });
+
+    if (!order) {
+      return apiResponse.error(res, "Order not found or not pending", 404);
+    }
+
+    order.status = "rejected";
+    await order.save();
+
+    return apiResponse.success(res, "Order rejected", order);
+  } catch (err) {
+    return apiResponse.error(res, "Server error", 500, err.message);
+  }
+};
