@@ -2,7 +2,7 @@ const Restaurant = require("../models/Restaurant");
 const User = require("../models/User");
 const apiResponse = require("../utils/apiResponse");
 
-// CREATE RESTAURANT
+// ================= CREATE RESTAURANT =================
 const createRestaurant = async (req, res) => {
   try {
     const { name, address } = req.body;
@@ -48,11 +48,11 @@ const createRestaurant = async (req, res) => {
     );
   } catch (error) {
     console.error("Create restaurant error:", error);
-    return apiResponse.error(res, "Server error", 500, error.message);
+    return apiResponse.error(res, "Server error", 500);
   }
 };
 
-// GET ALL / SEARCH RESTAURANTS
+// ================= GET ALL RESTAURANTS =================
 const getAllRestaurants = async (req, res) => {
   try {
     const { search } = req.query;
@@ -73,7 +73,23 @@ const getAllRestaurants = async (req, res) => {
   }
 };
 
+// ================= GET MY RESTAURANT =================
+// GET /api/restaurants/me
+const getMyRestaurant = async (req, res) => {
+  try {
+    const ownerId = req.user.id;
+
+    const restaurant = await Restaurant.findOne({ owner: ownerId });
+
+    return apiResponse.success(res, "Fetched my restaurant", restaurant);
+  } catch (error) {
+    console.error("Get my restaurant error:", error);
+    return apiResponse.error(res, "Server error", 500);
+  }
+};
+
 module.exports = {
   createRestaurant,
   getAllRestaurants,
+  getMyRestaurant,
 };
