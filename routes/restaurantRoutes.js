@@ -4,29 +4,27 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const roleMiddleware = require("../middleware/roleMiddleware");
 
-const {
-  createRestaurant,
-  getAllRestaurants,
-  getMyRestaurant,
-} = require("../controllers/restaurantController");
+const restaurantController = require("../controllers/restaurantController");
 
-// OWNER → create restaurant
+// ================= PUBLIC =================
+// Get all restaurants (search supported)
+router.get("/", restaurantController.getAllRestaurants);
+
+// ================= OWNER =================
+// Create restaurant (owner only)
 router.post(
   "/",
   authMiddleware,
   roleMiddleware("owner"),
-  createRestaurant
+  restaurantController.createRestaurant
 );
 
-// OWNER → get my restaurant ✅
+// Get my restaurant (owner only)
 router.get(
   "/me",
   authMiddleware,
   roleMiddleware("owner"),
-  getMyRestaurant
+  restaurantController.getMyRestaurant
 );
-
-// PUBLIC → list / search restaurants
-router.get("/", getAllRestaurants);
 
 module.exports = router;

@@ -2,7 +2,8 @@ const Restaurant = require("../models/Restaurant");
 const User = require("../models/User");
 const apiResponse = require("../utils/apiResponse");
 
-// ================= CREATE RESTAURANT =================
+/* ================= CREATE RESTAURANT ================= */
+// POST /api/restaurants
 const createRestaurant = async (req, res) => {
   try {
     const { name, address } = req.body;
@@ -21,6 +22,7 @@ const createRestaurant = async (req, res) => {
 
     const ownerId = req.user.id;
 
+    // Owner can have only ONE restaurant
     const existingRestaurant = await Restaurant.findOne({ owner: ownerId });
     if (existingRestaurant) {
       return apiResponse.error(
@@ -36,6 +38,7 @@ const createRestaurant = async (req, res) => {
       owner: ownerId,
     });
 
+    // Link restaurant to user
     await User.findByIdAndUpdate(ownerId, {
       restaurant: restaurant._id,
     });
@@ -52,7 +55,8 @@ const createRestaurant = async (req, res) => {
   }
 };
 
-// ================= GET ALL RESTAURANTS =================
+/* ================= GET ALL RESTAURANTS ================= */
+// GET /api/restaurants
 const getAllRestaurants = async (req, res) => {
   try {
     const { search } = req.query;
@@ -69,11 +73,12 @@ const getAllRestaurants = async (req, res) => {
       restaurants
     );
   } catch (error) {
+    console.error("Get all restaurants error:", error);
     return apiResponse.error(res, "Server error", 500);
   }
 };
 
-// ================= GET MY RESTAURANT =================
+/* ================= GET MY RESTAURANT ================= */
 // GET /api/restaurants/me
 const getMyRestaurant = async (req, res) => {
   try {
@@ -81,13 +86,18 @@ const getMyRestaurant = async (req, res) => {
 
     const restaurant = await Restaurant.findOne({ owner: ownerId });
 
-    return apiResponse.success(res, "Fetched my restaurant", restaurant);
+    return apiResponse.success(
+      res,
+      "Fetched my restaurant",
+      restaurant
+    );
   } catch (error) {
     console.error("Get my restaurant error:", error);
     return apiResponse.error(res, "Server error", 500);
   }
 };
 
+/* ================= EXPORTS ================= */
 module.exports = {
   createRestaurant,
   getAllRestaurants,

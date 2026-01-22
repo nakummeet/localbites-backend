@@ -2,11 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    name: { type: String, required: true, trim: true },
 
     email: {
       type: String,
@@ -14,14 +10,9 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
 
-    password: {
-      type: String,
-      required: true,
-
-    },
+    password: { type: String, required: true },
 
     role: {
       type: String,
@@ -29,28 +20,17 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
 
-    number: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    number: { type: String, required: true },
+    address: { type: String, required: true },
 
-    address: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    // Owner → Restaurant (1:1 for MVP)
+    // ✅ SINGLE SOURCE OF TRUTH
     restaurant: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Restaurant",
       default: null,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("User", userSchema);

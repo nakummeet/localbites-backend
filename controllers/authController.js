@@ -1,6 +1,5 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
-const Restaurant = require("../models/Restaurant");
 const generateToken = require("../utils/generateToken");
 const apiResponse = require("../utils/apiResponse");
 
@@ -10,53 +9,44 @@ const signup = async (req, res) => {
     const { name, email, password, address, number, role } = req.body;
 
     if (!name || !email || !password || !address || !number || !role) {
-      return apiResponse.error(res, "Please fill all required fields", 400);
+      return apiResponse.error(res, "All fields required", 400);
     }
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
+    const exists = await User.findOne({ email });
+    if (exists) {
       return apiResponse.error(res, "User already exists", 409);
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashed = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
+    const user = await User.create({
       name,
       email,
-      password: hashedPassword,
+      password: hashed,
       address,
       number,
-      role, // "owner" or "user"
+      role,
     });
 
-    // 🔴 IMPORTANT:
-    // Signup DOES NOT decide restaurant
-    // Signup DOES NOT auto-login logic in frontend
-    const token = generateToken({
-      id: newUser._id,
-      role: newUser.role,
-    });
+    const token = generateToken({ id: user._id, role: user.role });
 
     return apiResponse.success(
       res,
-      "User created successfully",
+      "Signup success",
       {
         token,
         user: {
-          id: newUser._id,
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-          number: newUser.number,
-          address: newUser.address,
-          restaurantId: null, // always null on signup
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          restaurantId: null, // ALWAYS null on signup
         },
       },
       201
     );
-  } catch (error) {
-    console.error("Signup error:", error);
-    return apiResponse.error(res, "Server error", 500, error.message);
+  } catch (err) {
+    return apiResponse.error(res, "Server error", 500);
   }
 };
 
@@ -65,31 +55,20 @@ const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return apiResponse.error(res, "Email and password are required", 400);
-    }
-
     const user = await User.findOne({ email });
     if (!user) {
       return apiResponse.error(res, "Invalid credentials", 401);
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
       return apiResponse.error(res, "Invalid credentials", 401);
     }
 
-    // 🔑 OWNER → fetch restaurant
-    let restaurantId = null;
-    if (user.role === "owner") {
-      const restaurant = await Restaurant.findOne({ owner: user._id });
-      restaurantId = restaurant ? restaurant._id : null;
-    }
+    const token = generateToken({ id: user._id, role: user.role });
 
-    const token = generateToken({
-      id: user._id,
-      role: user.role,
-    });
+    // ✅ SINGLE SOURCE OF TRUTH
+    const restaurantId = user.restaurant ? user.restaurant : null;
 
     return apiResponse.success(res, "Login successful", {
       token,
@@ -100,12 +79,12 @@ const signin = async (req, res) => {
         role: user.role,
         number: user.number,
         address: user.address,
-        restaurantId, // ✅ THE KEY FIX
+        restaurantId, // 🔥 ALWAYS CORRECT NOW
       },
     });
-  } catch (error) {
-    console.error("Signin error:", error);
-    return apiResponse.error(res, "Server error", 500, error.message);
+  } catch (err) {
+    console.error(err);
+    return apiResponse.error(res, "Server error", 500);
   }
 };
 
