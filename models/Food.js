@@ -21,7 +21,7 @@ const foodSchema = new mongoose.Schema(
 
     image: {
       type: String,
-      default: "https://cdn-icons-png.flaticon.com/512/857/857681.png",
+      default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSw6lDFqegyGGT6Ptp0C4ZPh-ksB3791uqEqxuWdLOQw&s",
     },
 
     isAvailable: {
