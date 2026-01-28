@@ -85,21 +85,24 @@ exports.getMyOrders = async (req, res) => {
 ------------------------------------------------------- */
 exports.getRestaurantOrders = async (req, res) => {
   try {
-    const restaurant = await Restaurant.findOne({ owner: req.user.id });
+    // ✅ SOURCE OF TRUTH
+    const restaurantId = req.user.restaurant;
 
-    if (!restaurant) {
-      return apiResponse.error(res, "Restaurant not found", 403);
+    if (!restaurantId) {
+      return apiResponse.error(res, "Restaurant not linked to user", 403);
     }
 
     const orders = await Order.find({
-      restaurant: restaurant._id,
+      restaurant: restaurantId,
     }).sort({ createdAt: -1 });
 
     return apiResponse.success(res, "Restaurant orders fetched", orders);
   } catch (err) {
+    console.error(err);
     return apiResponse.error(res, "Server error", 500);
   }
 };
+
 
 /* -------------------------------------------------------
    SHOPKEEPER: ACCEPT ORDER
