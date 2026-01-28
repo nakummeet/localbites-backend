@@ -85,18 +85,16 @@ exports.getMyOrders = async (req, res) => {
 ------------------------------------------------------- */
 exports.getRestaurantOrders = async (req, res) => {
   try {
-    console.log("SHOPKEEPER USER ID:", req.user.id);
-    console.log("SHOPKEEPER RESTAURANT FROM USER:", req.user.restaurant);
+    // ✅ SOURCE OF TRUTH
+    const restaurantId = req.user.restaurant;
 
-    if (!req.user.restaurant) {
+    if (!restaurantId) {
       return apiResponse.error(res, "Restaurant not linked to user", 403);
     }
 
     const orders = await Order.find({
-      restaurant: req.user.restaurant,
-    });
-
-    console.log("ORDERS FOUND:", orders.length);
+      restaurant: restaurantId,
+    }).sort({ createdAt: -1 });
 
     return apiResponse.success(res, "Restaurant orders fetched", orders);
   } catch (err) {
@@ -104,7 +102,6 @@ exports.getRestaurantOrders = async (req, res) => {
     return apiResponse.error(res, "Server error", 500);
   }
 };
-
 
 
 /* -------------------------------------------------------
